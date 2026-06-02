@@ -1,34 +1,19 @@
-# Virtual environments
 venv/
-.venv/
-.env/
-
-# Python
 __pycache__/
-*.py[cod]
-*.so
-
-# Environment files
-.env
+*.pyc
 
 # Logs
 logs/
-*.log
 
-# Data
-storage/
-*.db
+# Runtime storage
+storage/snapshots/
+
+# OS files
+.DS_Store
 
 # IDE
 .vscode/
 .idea/
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Pytest
-.pytest_cache/
-
-# Mypy
-.mypy_cache/
+# Python env
+.env

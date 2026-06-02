@@ -36,6 +36,10 @@ signal_router = SignalRouter()
 
 class StrategyEngine:
 
+    def __init__(self):
+
+        self.last_signal = {}
+
     def process_candle(self, candle):
 
         ema_20 = indicator_cache.get_value(
@@ -76,63 +80,24 @@ class StrategyEngine:
 
             return
 
-        signal = None
+        current_signal = None
 
-        # LONG SIGNAL
+        # LONG STATE
         if (
             ema_20 > ema_50 and
             rsi_14 > 55
         ):
 
-            signal = SignalEvent(
-                symbol=candle.symbol,
+            current_signal = "LONG"
 
-                signal_type="LONG",
-
-                confidence=0.75,
-
-                price=candle.close,
-
-                timestamp=int(time.time()),
-
-                strategy_name=(
-                    "EMA_RSI_STRATEGY"
-                ),
-
-                reason=(
-                    "EMA20 above EMA50 "
-                    "and RSI above 55"
-                )
-            )
-
-        # SHORT SIGNAL
+        # SHORT STATE
         elif (
             ema_20 < ema_50 and
             rsi_14 < 45
         ):
 
-            signal = SignalEvent(
-                symbol=candle.symbol,
+            current_signal = "SHORT"
 
-                signal_type="SHORT",
-
-                confidence=0.75,
-
-                price=candle.close,
-
-                timestamp=int(time.time()),
-
-                strategy_name=(
-                    "EMA_RSI_STRATEGY"
-                ),
-
-                reason=(
-                    "EMA20 below EMA50 "
-                    "and RSI below 45"
-                )
-            )
-
-        # NO SIGNAL
         else:
 
             decision_logger.info(
@@ -142,11 +107,56 @@ class StrategyEngine:
 
             return
 
+        previous_signal = (
+            self.last_signal.get(
+                candle.symbol
+            )
+        )
+
+        # NO CHANGE -> SKIP
+        if previous_signal == current_signal:
+
+            decision_logger.info(
+                f"{candle.symbol} "
+                f"duplicate {current_signal} blocked"
+            )
+
+            return
+
+        # STORE NEW STATE
+        self.last_signal[
+            candle.symbol
+        ] = current_signal
+
+        signal = SignalEvent(
+
+            symbol=candle.symbol,
+
+            signal_type=current_signal,
+
+            confidence=0.75,
+
+            price=candle.close,
+
+            timestamp=int(time.time()),
+
+            strategy_name=(
+                "EMA_RSI_STRATEGY"
+            ),
+
+            reason=(
+                f"EMA/RSI crossover -> "
+                f"{current_signal}"
+            )
+        )
+
         filter_layer.update_signal_time(
             candle.symbol
         )
 
-        signal_router.route_signal(signal)
+        signal_router.route_signal(
+            signal
+        )
 
         signal_logger.info(
             f"{signal.symbol} "
@@ -163,4 +173,6 @@ def start_strategy_engine():
 
         candle = candle_queue.get()
 
-        engine.process_candle(candle)
+        engine.process_candle(
+            candle
+        )

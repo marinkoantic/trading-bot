@@ -78,6 +78,12 @@ class OrderEvent:
 @dataclass(slots=True)
 class FillEvent:
     order_id: str
+    
+    symbol: str
+    
+    side: str
+    
+    
 
     filled_quantity: float
     fill_price: float
@@ -97,7 +103,8 @@ class FillEvent:
 @dataclass(slots=True)
 class PositionEvent:
     symbol: str
-
+    
+    #Long or Short
     side: str
 
     entry_price: float

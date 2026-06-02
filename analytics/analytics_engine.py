@@ -6,6 +6,10 @@ from analytics.statistics import StatisticsTracker
 
 from utils.logger import setup_logger
 
+from portfolio.account_state import (
+    account_state
+)
+
 
 analytics_logger = setup_logger(
     "analytics_logger",
@@ -51,11 +55,11 @@ class AnalyticsEngine:
         )
 
         statistics_tracker.update_equity(
-            portfolio_engine.balance
+            account_state.balance
         )
 
         analytics_logger.info(
-            f"Balance={portfolio_engine.balance} | "
+            f"Balance={account_state.balance} | "
             f"TotalPnL={total_pnl} | "
             f"Winrate={winrate} | "
             f"AvgPnL={avg_pnl} | "

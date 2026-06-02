@@ -5,6 +5,10 @@ import time
 
 from market.websocket_client import start_websocket
 
+from data.historical_loader import (
+    HistoricalLoader
+)
+
 from candles.candle_engine import start_candle_engine
 
 from indicators.indicator_engine import (
@@ -34,6 +38,17 @@ from analytics.watchdog import (
 from utils.logger import setup_logger
 
 
+from config.settings import (
+    TRADING_SYMBOL,
+    TRADING_TIMEFRAME,
+    HISTORICAL_CANDLE_LIMIT
+)
+
+from utils.thread_wrapper import (
+    safe_thread_runner
+)
+
+
 system_logger = setup_logger(
     "system_logger",
     "logs/system/system.log"
@@ -46,6 +61,8 @@ shutdown_event = threading.Event()
 health_monitor = HealthMonitor()
 
 watchdog = Watchdog()
+
+historical_loader = HistoricalLoader()
 
 
 def run_health_monitor():
@@ -71,13 +88,23 @@ def graceful_shutdown(signum, frame):
     shutdown_event.set()
 
     sys.exit(0)
+    
+    
 
-
-def start_thread(target, name):
+def start_thread(
+    target,
+    name
+):
 
     thread = threading.Thread(
-        target=target,
+
+        target=safe_thread_runner(
+            target,
+            name
+        ),
+
         daemon=True,
+
         name=name
     )
 
@@ -88,6 +115,28 @@ def start_thread(target, name):
     )
 
     return thread
+
+
+def warmup_historical_data():
+
+    system_logger.info(
+        "Loading historical candles..."
+    )
+
+    loaded = (
+        historical_loader.load_historical_candles(
+            symbol= TRADING_SYMBOL,
+            interval= TRADING_TIMEFRAME,
+            limit= HISTORICAL_CANDLE_LIMIT
+        )
+    )
+
+    system_logger.info(
+        f"{loaded} historical candles loaded"
+    )
+
+
+
 
 
 def main():
@@ -105,6 +154,9 @@ def main():
     system_logger.info(
         "Starting Trading System"
     )
+    
+    # Historical WARMUP
+    warmup_historical_data()
 
     threads = [
 

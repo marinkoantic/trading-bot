@@ -1,20 +1,38 @@
-import random
+from decimal import Decimal
 
 
-def apply_slippage(price, side):
+BASE_SLIPPAGE = Decimal(
+    "0.0007"
+)
 
-    slippage_bps = random.uniform(
-        1,
-        5
+
+def apply_slippage(
+    price,
+    side,
+    volatility=Decimal("0")
+):
+
+    price = Decimal(
+        str(price)
     )
 
-    slippage = (
-        price *
-        (slippage_bps / 10000)
+    slippage_percent = (
+        BASE_SLIPPAGE
+        + volatility
     )
 
+    slippage_amount = (
+        price * slippage_percent
+    )
+
+    # BUY = WORSE PRICE
     if side == "BUY":
 
-        return price + slippage
+        return (
+            price + slippage_amount
+        )
 
-    return price - slippage
+    # SELL = WORSE PRICE
+    return (
+        price - slippage_amount
+    )

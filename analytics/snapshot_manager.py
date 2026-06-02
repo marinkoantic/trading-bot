@@ -1,6 +1,10 @@
 import json
 import os
 
+from portfolio.account_state import (
+    account_state
+)
+
 
 class SnapshotManager:
 
@@ -15,27 +19,72 @@ class SnapshotManager:
             "storage/snapshots/runtime_snapshot.json"
         )
 
-    def serialize_position(self, position):
+    # =====================================================
+    # SERIALIZE POSITION
+    # =====================================================
+
+    def serialize_position(
+        self,
+        position
+    ):
 
         return {
+
             "symbol": position.symbol,
+
             "side": position.side,
-            "entry_price": position.entry_price,
-            "current_price": position.current_price,
-            "quantity": position.quantity,
+
+            "entry_price": (
+                position.entry_price
+            ),
+
+            "current_price": (
+                position.current_price
+            ),
+
+            "quantity": (
+                position.quantity
+            ),
+
             "unrealized_pnl": (
                 position.unrealized_pnl
             ),
+
             "realized_pnl": (
                 position.realized_pnl
             ),
-            "timestamp": position.timestamp
+
+            "timestamp": (
+                position.timestamp
+            )
         }
 
-    def save_snapshot(self, portfolio_engine):
+    # =====================================================
+    # SAVE SNAPSHOT
+    # =====================================================
+
+    def save_snapshot(
+        self,
+        portfolio_engine
+    ):
 
         snapshot = {
-            "balance": portfolio_engine.balance,
+
+            "balance": (
+                account_state.balance
+            ),
+
+            "realized_pnl": (
+                account_state.realized_pnl
+            ),
+
+            "unrealized_pnl": (
+                account_state.unrealized_pnl
+            ),
+
+            "total_fees": (
+                account_state.total_fees
+            ),
 
             "open_positions": {
 
@@ -44,7 +93,8 @@ class SnapshotManager:
                 )
 
                 for symbol, position
-                in portfolio_engine.open_positions.items()
+                in portfolio_engine
+                .open_positions.items()
             },
 
             "trade_count": len(
@@ -63,6 +113,10 @@ class SnapshotManager:
                 indent=4
             )
 
+    # =====================================================
+    # LOAD SNAPSHOT
+    # =====================================================
+
     def load_snapshot(self):
 
         if not os.path.exists(
@@ -71,9 +125,15 @@ class SnapshotManager:
 
             return None
 
-        with open(
-            self.snapshot_path,
-            "r"
-        ) as file:
+        try:
 
-            return json.load(file)
+            with open(
+                self.snapshot_path,
+                "r"
+            ) as file:
+
+                return json.load(file)
+
+        except Exception:
+
+            return None
