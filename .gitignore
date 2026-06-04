@@ -17,3 +17,7 @@ storage/snapshots/
 
 # Python env
 .env
+
+#Runtime storage
+storage/snapshots/
+storage/jsonl/
