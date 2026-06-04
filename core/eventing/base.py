@@ -9,9 +9,12 @@ from core.eventing.enums import EventType
 
 @dataclass(frozen=True, slots=True)
 class BaseEvent:
-    event_type: EventType
 
-    event_id: str = field(default_factory=lambda: str(uuid4()))
+    event_type: EventType = field(init=False)
+
+    event_id: str = field(
+        default_factory=lambda: str(uuid4())
+    )
 
     timestamp: datetime = field(
         default_factory=lambda: datetime.now(UTC)
