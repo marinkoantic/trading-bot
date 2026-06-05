@@ -9,6 +9,26 @@ from core.eventing.bootstrap import (
     setup_eventing,
 )
 
+from core.eventing.enums import (
+    EventType,
+)
+
+from core.eventing.runtime_bus import (
+    event_bus,
+)
+
+from demo_strategy import (
+    DemoStrategy,
+)
+
+from strategy.strategy_registry import (
+    StrategyRegistry,
+)
+
+from strategy.handlers.tick_handler import (
+    TickEventHandler,
+)
+
 from data.historical_loader import (
     HistoricalLoader
 )
@@ -146,6 +166,21 @@ def warmup_historical_data():
 def main():
 
     setup_eventing()
+    
+    registry = StrategyRegistry()
+    
+    registry.register(
+        DemoStrategy()
+    )
+    
+    tick_handler = TickEventHandler(
+        registry
+    )
+    
+    event_bus.subscribe(
+        EventType.MARKET_TICK,
+        tick_handler,
+    )
     
     signal.signal(
         signal.SIGINT,
