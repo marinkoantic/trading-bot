@@ -1,30 +1,31 @@
-from decimal import Decimal
+import random
 
 
 class LiquidityEngine:
 
-    def calculate_fill_ratio(
-        self,
-        symbol,
-        quantity
-    ):
+    def __init__(self):
 
-        quantity = Decimal(
-            str(quantity)
+        self.min_liquidity = 250_000
+
+        self.max_liquidity = 5_000_000
+
+    def get_available_liquidity(
+        self,
+        symbol: str,
+    ) -> float:
+
+        return random.uniform(
+            self.min_liquidity,
+            self.max_liquidity,
         )
 
-        # SIMULATED LUNC LIQUIDITY
+    def calculate_fill_quantity(
+        self,
+        requested_quantity: float,
+        available_liquidity: float,
+    ) -> float:
 
-        if quantity <= Decimal("1000"):
-
-            return Decimal("1.0")
-
-        if quantity <= Decimal("5000"):
-
-            return Decimal("0.85")
-
-        if quantity <= Decimal("10000"):
-
-            return Decimal("0.65")
-
-        return Decimal("0.40")
+        return min(
+            requested_quantity,
+            available_liquidity,
+        )
