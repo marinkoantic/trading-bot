@@ -10,6 +10,10 @@ from portfolio.portfolio_manager import (
     PortfolioManager,
 )
 
+from simulation.execution_simulator import (
+    ExecutionSimulator,
+)
+
 
 class SignalEventHandler:
 
@@ -23,6 +27,10 @@ class SignalEventHandler:
         )
 
         self.portfolio = portfolio
+
+        self.execution_simulator = (
+            ExecutionSimulator()
+        )
 
     def __call__(
         self,
@@ -55,17 +63,24 @@ class SignalEventHandler:
 
             return
 
+        execution_report = (
+            self.execution_simulator
+            .execute_market_order(
+                symbol=event.symbol,
+
+                side=event.direction.value,
+
+                price=0.000062,
+
+                quantity=1_000_000,
+            )
+        )
+
         self.portfolio.open_position(
-            symbol=event.symbol,
-
-            quantity=1_000_000,
-
-            entry_price=0.000062,
-
-            side=event.direction.value,
+            execution_report
         )
 
         print(
             "[EXECUTION] "
-            "Mock execution completed"
+            "Simulated execution completed"
         )

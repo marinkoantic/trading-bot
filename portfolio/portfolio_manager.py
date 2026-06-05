@@ -14,33 +14,62 @@ class PortfolioManager:
 
     def open_position(
         self,
-        symbol: str,
-        quantity: float,
-        entry_price: float,
-        side: str = "LONG",
+        execution_report,
     ) -> None:
 
         position = Position(
-            symbol=symbol,
+            symbol=(
+                execution_report.symbol
+            ),
 
-            quantity=quantity,
+            quantity=(
+                execution_report.quantity
+            ),
 
-            entry_price=entry_price,
+            entry_price=(
+                execution_report.executed_price
+            ),
 
-            current_price=entry_price,
+            current_price=(
+                execution_report.executed_price
+            ),
 
-            side=side,
+            side=execution_report.side,
         )
 
-        self.positions[symbol] = (
-            position
+        self.positions[
+            execution_report.symbol
+        ] = position
+
+        print(
+            f"[PORTFOLIO] "
+            f"Opened "
+            f"{execution_report.side} "
+            f"{execution_report.symbol}"
         )
 
         print(
             f"[PORTFOLIO] "
-            f"Opened {side} "
-            f"{symbol}"
+            f"Fill="
+            f"{execution_report.executed_price:.8f}"
         )
+
+        print(
+            f"[PORTFOLIO] "
+            f"Fee="
+            f"{execution_report.fee:.6f}"
+        )
+
+        print(
+            f"[PORTFOLIO] "
+            f"Slippage="
+            f"{execution_report.slippage:.6f}"
+        )
+        
+        
+        
+        
+        
 
     def update_price(
         self,
