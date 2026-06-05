@@ -2,6 +2,10 @@ from core.eventing.signal import (
     SignalEvent,
 )
 
+from core.eventing.enums import (
+    SignalDirection,
+)
+
 from risk.filters.cooldown_filter import (
     CooldownFilter,
 )
@@ -31,6 +35,22 @@ class RiskManager:
         self,
         signal: SignalEvent,
     ) -> bool:
+
+        # EXIT signals bypass cooldowns
+        # because reducing risk must
+        # always be allowed
+
+        if (
+            signal.direction
+            == SignalDirection.EXIT
+        ):
+
+            print(
+                "[RISK] EXIT signal "
+                "auto-approved"
+            )
+
+            return True
 
         if not (
             self.confidence_filter
