@@ -17,7 +17,7 @@ from core.eventing.runtime_bus import (
     event_bus,
 )
 
-from demo_strategy import (
+from strategy.demo_strategy import (
     DemoStrategy,
 )
 
@@ -51,6 +51,14 @@ from simulation.execution_engine import (
     start_execution_engine
 )
 
+from portfolio.portfolio_manager import (
+    PortfolioManager,
+)
+
+from portfolio.handlers.portfolio_tick_handler import (
+    PortfolioTickHandler,
+)
+
 from portfolio.portfolio import (
     start_portfolio_engine
 )
@@ -64,7 +72,6 @@ from analytics.watchdog import (
 )
 
 from utils.logger import setup_logger
-
 
 from config.settings import (
     TRADING_SYMBOL,
@@ -85,14 +92,11 @@ system_logger = setup_logger(
 
 shutdown_event = threading.Event()
 
-
 health_monitor = HealthMonitor()
 
 watchdog = Watchdog()
 
 historical_loader = HistoricalLoader()
-
-
 
 
 def run_health_monitor():
@@ -118,8 +122,7 @@ def graceful_shutdown(signum, frame):
     shutdown_event.set()
 
     sys.exit(0)
-    
-    
+
 
 def start_thread(
     target,
@@ -155,9 +158,9 @@ def warmup_historical_data():
 
     loaded = (
         historical_loader.load_historical_candles(
-            symbol= TRADING_SYMBOL,
-            interval= TRADING_TIMEFRAME,
-            limit= HISTORICAL_CANDLE_LIMIT
+            symbol=TRADING_SYMBOL,
+            interval=TRADING_TIMEFRAME,
+            limit=HISTORICAL_CANDLE_LIMIT
         )
     )
 
@@ -166,38 +169,47 @@ def warmup_historical_data():
     )
 
 
-
-
-
 def main():
 
     setup_eventing()
-    
-    registry = StrategyRegistry()
-    
-    signal_handler = SignalEventHandler()
 
-    
+    registry = StrategyRegistry()
+
     registry.register(
         DemoStrategy()
     )
-    
+
     tick_handler = TickEventHandler(
         registry
     )
-    
+
+    portfolio = PortfolioManager()
+
+    signal_handler = SignalEventHandler(
+        portfolio=portfolio
+    )
+
+    portfolio_tick_handler = (
+        PortfolioTickHandler(
+            portfolio
+        )
+    )
+
     event_bus.subscribe(
         EventType.MARKET_TICK,
         tick_handler,
     )
-    
+
+    event_bus.subscribe(
+        EventType.MARKET_TICK,
+        portfolio_tick_handler,
+    )
+
     event_bus.subscribe(
         EventType.SIGNAL,
         signal_handler,
     )
-    
-    
-    
+
     signal.signal(
         signal.SIGINT,
         graceful_shutdown
@@ -211,7 +223,7 @@ def main():
     system_logger.info(
         "Starting Trading System"
     )
-    
+
     # Historical WARMUP
     warmup_historical_data()
 

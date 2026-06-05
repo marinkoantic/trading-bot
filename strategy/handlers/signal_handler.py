@@ -6,14 +6,23 @@ from risk.risk_manager import (
     RiskManager,
 )
 
+from portfolio.portfolio_manager import (
+    PortfolioManager,
+)
+
 
 class SignalEventHandler:
 
-    def __init__(self):
+    def __init__(
+        self,
+        portfolio: PortfolioManager,
+    ):
 
         self.risk_manager = (
             RiskManager()
         )
+
+        self.portfolio = portfolio
 
     def __call__(
         self,
@@ -35,7 +44,28 @@ class SignalEventHandler:
         if not approved:
             return
 
+        if self.portfolio.has_position(
+            event.symbol
+        ):
+
+            print(
+                "[PORTFOLIO] "
+                "Position already exists"
+            )
+
+            return
+
+        self.portfolio.open_position(
+            symbol=event.symbol,
+
+            quantity=1_000_000,
+
+            entry_price=0.000062,
+
+            side=event.direction.value,
+        )
+
         print(
             "[EXECUTION] "
-            "Signal passed risk checks"
+            "Mock execution completed"
         )
