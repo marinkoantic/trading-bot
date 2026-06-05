@@ -10,6 +10,13 @@ from market.heartbeat import heartbeat
 
 from utils.logger import setup_logger
 
+from core.eventing.adapters import (
+    adapt_legacy_tick,
+)
+
+from core.eventing.runtime_bus import (
+    event_bus,
+)
 
 websocket_logger = setup_logger(
     "websocket_logger",
@@ -40,7 +47,20 @@ def on_message(ws, message):
         )
 
         tick_queue.put(tick)
+        
+        typed_event = adapt_legacy_tick(
+            {
+                "symbol": tick.symbol,
+                "price": tick.price,
+                "volume": tick.quantity,
+                "bid": tick.price,
+                "ask": tick.price,
 
+            }
+        )
+        
+        event_bus.publish(typed_event)
+        
         heartbeat.update()
 
         SystemState.total_ticks_processed += 1

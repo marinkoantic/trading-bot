@@ -5,6 +5,10 @@ import time
 
 from market.websocket_client import start_websocket
 
+from core.eventing.bootstrap import (
+    setup_eventing,
+)
+
 from data.historical_loader import (
     HistoricalLoader
 )
@@ -141,6 +145,8 @@ def warmup_historical_data():
 
 def main():
 
+    setup_eventing()
+    
     signal.signal(
         signal.SIGINT,
         graceful_shutdown
