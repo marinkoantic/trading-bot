@@ -12,6 +12,10 @@ from simulation.models.execution_report import (
     ExecutionReport,
 )
 
+from simulation.orderbook_engine import (
+    OrderBookEngine,
+)
+
 
 class ExecutionSimulator:
 
@@ -19,7 +23,12 @@ class ExecutionSimulator:
 
         self.fee_rate = 0.001
 
+        # 0.15% max base slippage
         self.max_slippage_pct = 0.0015
+
+        self.orderbook_engine = (
+            OrderBookEngine()
+        )
 
         self.liquidity_engine = (
             LiquidityEngine()
@@ -32,8 +41,17 @@ class ExecutionSimulator:
         quantity: float,
     ) -> ExecutionReport:
 
+        print(
+            "[DEBUG] execute_market_order called"
+        )
+
         snapshot = (
             MarketState.get_snapshot()
+        )
+
+        print(
+            f"[DEBUG] Snapshot="
+            f"{snapshot}"
         )
 
         if snapshot is None:
@@ -49,6 +67,17 @@ class ExecutionSimulator:
             )
         )
 
+        print(
+            f"[DEBUG] Available liquidity="
+            f"{available_liquidity}"
+        )
+
+        if available_liquidity <= 0:
+
+            raise RuntimeError(
+                "No liquidity available"
+            )
+
         filled_quantity = (
             self.liquidity_engine
             .calculate_fill_quantity(
@@ -58,6 +87,11 @@ class ExecutionSimulator:
                     available_liquidity
                 ),
             )
+        )
+
+        print(
+            f"[DEBUG] Filled quantity="
+            f"{filled_quantity}"
         )
 
         partial_fill = (
@@ -79,6 +113,11 @@ class ExecutionSimulator:
             0,
             self.max_slippage_pct,
         ) * impact_multiplier
+
+        print(
+            f"[DEBUG] Slippage pct="
+            f"{slippage_pct}"
+        )
 
         if side == "LONG":
 
@@ -102,7 +141,12 @@ class ExecutionSimulator:
                 )
             )
 
-        slippage = (
+        spread_cost = (
+            snapshot.ask
+            - snapshot.bid
+        ) * filled_quantity
+
+        slippage = abs(
             executed_price
             - base_price
         ) * filled_quantity
@@ -111,6 +155,12 @@ class ExecutionSimulator:
             executed_price
             * filled_quantity
             * self.fee_rate
+        )
+
+        total_transaction_cost = (
+            fee
+            + slippage
+            + spread_cost
         )
 
         print(
@@ -128,6 +178,18 @@ class ExecutionSimulator:
                 f"{quantity:,.0f}"
             )
 
+        print(
+            f"[EXECUTION] "
+            f"SpreadCost="
+            f"{spread_cost:.6f}"
+        )
+
+        print(
+            f"[EXECUTION] "
+            f"TransactionCost="
+            f"{total_transaction_cost:.6f}"
+        )
+
         return ExecutionReport(
             symbol=symbol,
 
@@ -142,4 +204,52 @@ class ExecutionSimulator:
             slippage=slippage,
 
             fee=fee,
+        )
+
+    def calculate_vwap_fill(
+        self,
+        levels,
+        quantity,
+    ):
+
+        remaining = quantity
+
+        total_cost = 0.0
+
+        filled = 0.0
+
+        for level in levels:
+
+            if remaining <= 0:
+
+                break
+
+            fill_qty = min(
+                remaining,
+                level.quantity,
+            )
+
+            total_cost += (
+                fill_qty
+                * level.price
+            )
+
+            filled += fill_qty
+
+            remaining -= fill_qty
+
+        if filled == 0:
+
+            raise RuntimeError(
+                "No liquidity available"
+            )
+
+        vwap_price = (
+            total_cost
+            / filled
+        )
+
+        return (
+            vwap_price,
+            filled,
         )
