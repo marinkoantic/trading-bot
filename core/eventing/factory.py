@@ -1,5 +1,8 @@
 from core.eventing.market import TickEvent
 from core.eventing.sequence import EventSequence
+from core.eventing.signal import (
+    SignalEvent,
+)
 
 
 class EventFactory:
@@ -20,6 +23,25 @@ class EventFactory:
             volume=volume,
             bid=bid,
             ask=ask,
+            source=source,
+            sequence_id=EventSequence.next(),
+        )
+    
+    
+    @staticmethod
+    def create_signal_event(
+        symbol: str,
+        direction,
+        confidence: float,
+        strategy_name: str,
+        source: str = "strategy",
+    ) -> SignalEvent:
+        
+        return SignalEvent(
+            symbol=symbol,
+            direction=direction,
+            confidence = confidence,
+            strategy_name = strategy_name,
             source=source,
             sequence_id=EventSequence.next(),
         )

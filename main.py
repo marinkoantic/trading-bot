@@ -29,6 +29,10 @@ from strategy.handlers.tick_handler import (
     TickEventHandler,
 )
 
+from strategy.handlers.signal_handler import (
+    SignalEventHandler,
+)
+
 from data.historical_loader import (
     HistoricalLoader
 )
@@ -87,6 +91,8 @@ health_monitor = HealthMonitor()
 watchdog = Watchdog()
 
 historical_loader = HistoricalLoader()
+
+
 
 
 def run_health_monitor():
@@ -169,6 +175,9 @@ def main():
     
     registry = StrategyRegistry()
     
+    signal_handler = SignalEventHandler()
+
+    
     registry.register(
         DemoStrategy()
     )
@@ -181,6 +190,13 @@ def main():
         EventType.MARKET_TICK,
         tick_handler,
     )
+    
+    event_bus.subscribe(
+        EventType.SIGNAL,
+        signal_handler,
+    )
+    
+    
     
     signal.signal(
         signal.SIGINT,

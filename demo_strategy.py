@@ -1,3 +1,15 @@
+from core.eventing.enums import (
+    SignalDirection,
+)
+
+from core.eventing.factory import (
+    EventFactory,
+)
+
+from core.eventing.runtime_bus import (
+    event_bus,
+)
+
 from strategy.base_strategy import (
     BaseStrategy,
 )
@@ -12,3 +24,21 @@ class DemoStrategy(BaseStrategy):
             f"{event.symbol} "
             f"{event.price}"
         )
+
+        signal = (
+            EventFactory.create_signal_event(
+                symbol=event.symbol,
+
+                direction=(
+                    SignalDirection.LONG
+                ),
+
+                confidence=0.8,
+
+                strategy_name=(
+                    "DemoStrategy"
+                ),
+            )
+        )
+
+        event_bus.publish(signal)
