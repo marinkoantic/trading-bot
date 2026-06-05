@@ -2,6 +2,10 @@ from portfolio.models.position import (
     Position,
 )
 
+from portfolio.models.trade import (
+    Trade,
+)
+
 
 class PortfolioManager:
 
@@ -11,6 +15,10 @@ class PortfolioManager:
             str,
             Position
         ] = {}
+        
+        self.closed_trades: list[
+            Trade
+        ] = []
 
     def open_position(
         self,
@@ -64,6 +72,77 @@ class PortfolioManager:
             f"[PORTFOLIO] "
             f"Slippage="
             f"{execution_report.slippage:.6f}"
+        )
+        
+        
+    def close_position(
+        self,
+        execution_report,
+    ) -> None:
+        
+        position = self.position.get(
+            execution_report.symbol
+        )
+        
+        if not position:
+            
+            print(
+                "[Portfolio] "
+                "No open position"
+            )
+            
+            return
+        
+        if position.side == "LONG":
+            
+            realized_pnl = (
+                execution_report.executed_price
+                - position.entry_price
+            ) * position.quantity
+            
+        else:
+            
+            realized_pnl = (
+                position.entry_price
+                -execution_report.executed_price
+            ) * position.quantity
+            
+        realized_pnl -= (
+            execution_report.fee
+        )
+        
+        trade = Trade(
+            symbol=position.symbol,
+            side=position.side,
+            quantity=position.quantity,
+            entry_price=(
+                position.entry_price
+            ),
+            exit_price=(
+                execution_report.executed_price
+            ),
+            realized_pnl=realized_pnl,
+            fee=execution_report.fee,
+        )
+        
+        self.closed_trades.append(
+            trade
+        )
+        
+        del self.positions[
+            execution_report.symbol
+        ]
+        
+        print(
+            f"[PORTFOLIO] "
+            f"Closed "
+            f"{position.symbol}"
+        )
+        
+        print(
+            f"[PORTFOLIO] "
+            f"RealizedPnL="
+            f"{realized_pnl:.6f}"
         )
         
         

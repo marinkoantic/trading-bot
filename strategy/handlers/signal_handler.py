@@ -1,3 +1,7 @@
+from core.eventing.enums import (
+    SignalDirection,
+)
+
 from core.eventing.signal import (
     SignalEvent,
 )
@@ -50,6 +54,38 @@ class SignalEventHandler:
         )
 
         if not approved:
+            return
+
+        if (
+            event.direction
+            == SignalDirection.EXIT
+        ):
+
+            if not (
+                self.portfolio.has_position(
+                    event.symbol
+                )
+            ):
+
+                return
+
+            execution_report = (
+                self.execution_simulator
+                .execute_market_order(
+                    symbol=event.symbol,
+
+                    side="EXIT",
+
+                    price=0.000062,
+
+                    quantity=1_000_000,
+                )
+            )
+
+            self.portfolio.close_position(
+                execution_report
+            )
+
             return
 
         if self.portfolio.has_position(

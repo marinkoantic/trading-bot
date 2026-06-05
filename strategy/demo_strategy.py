@@ -17,7 +17,13 @@ from strategy.base_strategy import (
 
 class DemoStrategy(BaseStrategy):
 
+    def __init__(self):
+
+        self.counter = 0
+
     def on_tick(self, event):
+
+        self.counter += 1
 
         print(
             f"[STRATEGY] "
@@ -25,13 +31,23 @@ class DemoStrategy(BaseStrategy):
             f"{event.price}"
         )
 
+        if self.counter % 20 == 0:
+
+            direction = (
+                SignalDirection.EXIT
+            )
+
+        else:
+
+            direction = (
+                SignalDirection.LONG
+            )
+
         signal = (
             EventFactory.create_signal_event(
                 symbol=event.symbol,
 
-                direction=(
-                    SignalDirection.LONG
-                ),
+                direction=direction,
 
                 confidence=0.8,
 
