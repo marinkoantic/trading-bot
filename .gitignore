@@ -25,3 +25,4 @@ storage/events/events.jsonl
 
 #testfile
 test_bus.py
+test_replay.py
