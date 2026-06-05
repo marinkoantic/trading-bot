@@ -18,6 +18,11 @@ from core.eventing.runtime_bus import (
     event_bus,
 )
 
+from market.market_state import (
+    MarketSnapshot,
+    MarketState,
+)
+
 websocket_logger = setup_logger(
     "websocket_logger",
     "logs/websocket/websocket.log"
@@ -28,6 +33,7 @@ BINANCE_WS_URL = (
     "wss://stream.binance.com:9443/ws/"
     "luncusdt@aggTrade"
 )
+
 
 
 def on_message(ws, message):
@@ -58,6 +64,32 @@ def on_message(ws, message):
 
             }
         )
+        
+        
+        bid = float(data["p"]) * 0.9999
+
+        ask = float(data["p"]) * 1.0001
+
+        spread = ask - bid
+
+        snapshot = MarketSnapshot(
+            symbol="LUNCUSDT",
+
+            last_price=float(data["p"]),
+
+            bid=bid,
+
+            ask=ask,
+
+            spread=spread,
+
+            timestamp=int(data["T"]),
+        )
+
+        MarketState.update(snapshot)        
+        
+        
+              
         
         event_bus.publish(typed_event)
         

@@ -1,5 +1,9 @@
 import random
 
+from market.market_state import (
+    MarketState,
+)
+
 from simulation.models.execution_report import (
     ExecutionReport,
 )
@@ -17,9 +21,18 @@ class ExecutionSimulator:
         self,
         symbol: str,
         side: str,
-        price: float,
         quantity: float,
     ) -> ExecutionReport:
+
+        snapshot = (
+            MarketState.get_snapshot()
+        )
+
+        if snapshot is None:
+
+            raise RuntimeError(
+                "No market snapshot available"
+            )
 
         slippage_pct = random.uniform(
             0,
@@ -28,22 +41,29 @@ class ExecutionSimulator:
 
         if side == "LONG":
 
+            base_price = snapshot.ask
+
             executed_price = (
-                price * (
+                base_price
+                * (
                     1 + slippage_pct
                 )
             )
 
         else:
 
+            base_price = snapshot.bid
+
             executed_price = (
-                price * (
+                base_price
+                * (
                     1 - slippage_pct
                 )
             )
 
         slippage = (
-            executed_price - price
+            executed_price
+            - base_price
         ) * quantity
 
         fee = (
@@ -57,7 +77,7 @@ class ExecutionSimulator:
 
             side=side,
 
-            requested_price=price,
+            requested_price=base_price,
 
             executed_price=executed_price,
 

@@ -56,6 +56,8 @@ class SignalEventHandler:
         if not approved:
             return
 
+        # EXIT FLOW
+
         if (
             event.direction
             == SignalDirection.EXIT
@@ -76,8 +78,6 @@ class SignalEventHandler:
 
                     side="EXIT",
 
-                    price=0.000062,
-
                     quantity=1_000_000,
                 )
             )
@@ -86,7 +86,14 @@ class SignalEventHandler:
                 execution_report
             )
 
+            print(
+                "[EXECUTION] "
+                "Exit execution completed"
+            )
+
             return
+
+        # ENTRY FLOW
 
         if self.portfolio.has_position(
             event.symbol
@@ -105,8 +112,6 @@ class SignalEventHandler:
                 symbol=event.symbol,
 
                 side=event.direction.value,
-
-                price=0.000062,
 
                 quantity=1_000_000,
             )
