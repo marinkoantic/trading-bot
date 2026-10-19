@@ -1,0 +1,3 @@
+[run]
+mode = "backtest"
+database = "storage/sqlite/backtest.db"

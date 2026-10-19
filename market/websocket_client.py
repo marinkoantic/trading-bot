@@ -10,6 +10,18 @@ from market.heartbeat import heartbeat
 
 from utils.logger import setup_logger
 
+from core.eventing.adapters import (
+    adapt_legacy_tick,
+)
+
+from core.eventing.runtime_bus import (
+    event_bus,
+)
+
+from market.market_state import (
+    MarketSnapshot,
+    MarketState,
+)
 
 websocket_logger = setup_logger(
     "websocket_logger",
@@ -21,6 +33,7 @@ BINANCE_WS_URL = (
     "wss://stream.binance.com:9443/ws/"
     "luncusdt@aggTrade"
 )
+
 
 
 def on_message(ws, message):
@@ -40,7 +53,46 @@ def on_message(ws, message):
         )
 
         tick_queue.put(tick)
+        
+        typed_event = adapt_legacy_tick(
+            {
+                "symbol": tick.symbol,
+                "price": tick.price,
+                "volume": tick.quantity,
+                "bid": tick.price,
+                "ask": tick.price,
 
+            }
+        )
+        
+        
+        bid = float(data["p"]) * 0.9999
+
+        ask = float(data["p"]) * 1.0001
+
+        spread = ask - bid
+
+        snapshot = MarketSnapshot(
+            symbol="LUNCUSDT",
+
+            last_price=float(data["p"]),
+
+            bid=bid,
+
+            ask=ask,
+
+            spread=spread,
+
+            timestamp=int(data["T"]),
+        )
+
+        MarketState.update(snapshot)        
+        
+        
+              
+        
+        event_bus.publish(typed_event)
+        
         heartbeat.update()
 
         SystemState.total_ticks_processed += 1

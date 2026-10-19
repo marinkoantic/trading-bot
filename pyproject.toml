@@ -1,0 +1,46 @@
+[project]
+name = "trading-bot"
+version = "0.2.0"
+description = "PAPER-ONLY trading and backtesting system (no live order execution)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+# Legacy modules (see docs/ARCHITECTURE.md) are excluded until they are removed or migrated.
+extend-exclude = [
+    "venv",
+    "analytics/analytics_engine.py", "analytics/equity_curve.py", "analytics/equity_logger.py",
+    "analytics/health_monitor.py", "analytics/metrics.py", "analytics/performance_analyzer.py",
+    "analytics/replay_engine.py", "analytics/snapshot_manager.py", "analytics/statistics.py",
+    "analytics/trade_logger.py", "analytics/watchdog.py",
+    "candles/candle_engine.py", "candles/candle_store.py", "candles/timeframes.py",
+    "config/settings.py", "core/events.py", "core/models.py", "core/state.py", "core/eventing",
+    "data/historical_loader.py", "indicators/cache.py", "indicators/indicator_engine.py",
+    "market/heartbeat.py", "market/market_state.py", "market/market_stream.py",
+    "market/reconnect-manager.py", "market/tick_buffer.py", "market/websocket_client.py",
+    "portfolio/account_state.py", "portfolio/exposure.py", "portfolio/handlers",
+    "portfolio/models", "portfolio/pnl.py", "portfolio/portfolio.py", "portfolio/portfolio_manager.py",
+    "portfolio/risk_manager.py", "portfolio/valuation_engine.py",
+    "risk/filters", "risk/position_sizer.py", "risk/risk_manager.py",
+    "simulation/exchange_rules.py", "simulation/exchange_simulator.py", "simulation/execution_engine.py",
+    "simulation/execution_simulator.py", "simulation/fees.py", "simulation/fills.py", "simulation/latency.py",
+    "simulation/liquidity_engine.py", "simulation/models", "simulation/oderbook.py",
+    "simulation/order_validator.py", "simulation/orderbook_engine.py", "simulation/price_normalizer.py",
+    "simulation/quantity_normalizer.py", "simulation/slippage.py", "simulation/spread_engine.py",
+    "simulation/volatility_engine.py",
+    "strategy/base_strategy.py", "strategy/demo_strategy.py", "strategy/filter_layer.py",
+    "strategy/handlers", "strategy/signal_router.py", "strategy/strategy_engine.py",
+    "strategy/strategy_registry.py",
+    "utils/dashboard.py", "utils/logger.py", "utils/performance.py", "utils/rotation.py",
+    "utils/thread_wrapper.py", "utils/timers.py",
+    "test_bus.py", "test_replay.py", "trade_ledger.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "BLE"]

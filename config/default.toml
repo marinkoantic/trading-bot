@@ -1,0 +1,78 @@
+# Base configuration. Every key is documented in README.md ("Konfiguration").
+# Mode can only be "paper" or "backtest" - live trading does not exist in this code base.
+
+[run]
+mode = "paper"
+symbols = ["LUNCUSDT"]
+timeframe = "1m"
+database = "storage/sqlite/trading.db"
+log_dir = "logs"
+report_dir = "storage/reports"
+seed = 42
+equity_snapshot_every_bars = 1
+
+[account]
+start_cash = "1000"
+quote_asset = "USDT"
+
+[costs]
+# Binance spot default taker/maker fee (0.1 %)
+taker_fee_rate = "0.001"
+maker_fee_rate = "0.001"
+half_spread_bps = "1"
+slippage_bps = "2"
+random_slippage_bps = "0"
+
+[execution]
+# Max share of a bar's volume a simulated order may take; remainder stays open
+max_volume_participation = "0.1"
+order_timeout_bars = 3
+
+[risk]
+risk_per_trade_pct = "1"
+max_position_notional_pct = "25"
+max_total_exposure_pct = "50"
+max_open_positions = 3
+max_daily_loss_pct = "3"
+max_drawdown_pct = "20"
+enable_shorts = false
+allow_reversal = false
+
+[strategy]
+name = "ema_rsi"
+signal_mode = "crossover"
+fast_period = 20
+slow_period = 50
+rsi_period = 14
+rsi_long_min = 55.0
+rsi_short_max = 45.0
+atr_period = 14
+atr_stop_multiple = 2.0
+cooldown_bars = 3
+
+[market]
+ws_url = "wss://stream.binance.com:9443"
+rest_url = "https://api.binance.com"
+stale_after_seconds = 30
+warmup_candles = 200
+reconnect_max_backoff_seconds = 60
+queue_size = 10000
+
+# Exchange rules per symbol (Binance spot filters; verify before use)
+[symbols.LUNCUSDT]
+tick_size = "0.00000001"
+step_size = "1"
+min_qty = "1"
+min_notional = "5"
+
+[symbols.BTCUSDT]
+tick_size = "0.01"
+step_size = "0.00001"
+min_qty = "0.00001"
+min_notional = "5"
+
+[symbols.ETHUSDT]
+tick_size = "0.01"
+step_size = "0.0001"
+min_qty = "0.0001"
+min_notional = "5"

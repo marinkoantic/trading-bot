@@ -1,0 +1,4 @@
+# Development: paper mode, separate database, short warmup
+[run]
+mode = "paper"
+database = "storage/sqlite/dev.db"
