@@ -26,3 +26,9 @@ storage/events/events.jsonl
 #testfile
 test_bus.py
 test_replay.py
+# Paper/backtest databases, reports and downloaded market data
+storage/sqlite/
+storage/reports/
+data/*.csv
+.pytest_cache/
+.ruff_cache/
